@@ -1,0 +1,146 @@
+<<Servlet>>
+Client의 요청을 처리하기 위한 기술
+Client가 요청하면 Server에서 실행되며 (Server에 의해서 호출되는 컴포넌트) DB에 대한 처리 등 Server의 Resource를 이용해서
+			  -----------
+만들어진 결과를 Client에 응답한다.
+Server에 의해서 호출되기 때문에 Server가 인식하는 위치에 저장되어 있어야 하며 Server가 찾아서 생성하고 호출할 수 있도록 정해진 규칙에 따라 작성되어야 한다.
+					  -----------------
+					  	표준화된 폴더 구조 classes폴더
+					  	
+1. Servlet의 작성 규칙
+	1) 표준화된 폴더 구조 안에 서블릿 클래스가 작성되어야 한다.
+	   서블릿이 저장되어야 하는 폴더 - classes폴더 (서블릿 디렉토리)
+	   [표준화된 폴더구조]
+	   Context
+	   	ㅣ
+	   	ㅣ______ image, css, js, html, jsp파일
+	   	ㅣ
+	   	ㅣ______ WEB-INF폴더
+	   			ㅣ______ web.xml (설정파일)
+	   			ㅣ
+	   			ㅣ______ lib 폴더 - 라이브러리 파일
+	   			ㅣ
+	   			ㅣ______ classes 폴더 - Servlet클래스 , DAO클래스, Service클래스 등의 자바클래스
+	   			
+	이클립스를 사용하는 경우
+	[Java Resources] - [src]에 작성하면 자동으로 Server가 인식하는 위치인  	   			
+	C:\ict\work\webwork\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\
+	wtpwebapps\serverweb\WEB-INF\classes 폴더에 클래스 파일이 생성된다.
+	=> 이 위치에 서블릿 클래스가 없으면 서버가 찾을 수 없다.
+	
+	2) 서버에 의해서 호출될 것이므로 반드리 public으로 작성해야 한다.
+		=> 어떤 패키지에 작성하더라도 서버가 찾아서 실행할 수 있어야 함으로
+		
+	3) 서블릿 클래스가 되기 위해서 무조건 서블릿 클래스를 상속 받아야 한다.
+		Servlet
+		   ^
+		      ㅣ
+	GenericServlet	----- 일반적인 내용을 담고 있는 서블릿
+		   ^
+		      ㅣ
+	  HttpServlet	----- http 프로토콜에 특화된 서블릿
+		   ^
+		      ㅣ
+		MyServlet	----- 사용자가 만드는 서블릿
+		   	 
+	4) Server가 호출할 메소드(callback메소드)를 오버라이딩
+		- Server가 요청을 분석해서 Servlet Directory에 존재하는 (미리 작성해 놓음) Servlet class를 찾아서
+		  적절한 시점에 해당 메소드를 자동으로 호출할 것이므로 처리하고 싶은 내용을 메소드를 오버라이딩 해서 구형해야 한다.
+		- Server가 Servlet의 lifecycle을 관리
+		- 오버라이딩할 메소드는 lifecycle과 관련있는 메소드
+		
+		[오버라이딩할 메소드]
+		- init : 서블릿객체가 초기화될 때 호출되는 메소드
+		- service : Client가 요청할 때 호출되는 메소드
+					Client의 요청을 처리하는 메소드로 요청받고 처리할 내용을 구현
+					( ex) 로그인, 게시판등록, 목록보기, 메일읽기...)
+					요청방식의 구분없이 모든 요청에 대해서 실행
+		- doGet : Client가 get방식으로 요청할 때 호출되는 메소드
+		- doPost : Client가 post방식으로 요청할 때 호출되는 메소드
+		- destroy : Servlet 객체가 소멸될 때 호출되는 메소드
+		
+	5) Server가 Servlet을 찾을 수 있도록 등록(설정파일에 등록 - web.xml)
+		=> 	Server가 요청을 분석해서 실행할 Servlet을 찾아서 실행한다. 
+			Server가 요청에 따라서 어떤 Servlet을 찾아 실행해야 하는지 알 수 있도록 설정파일에 등록해야 한다.
+			이런 정보를 web.xml에 등록한다. (실제 작업은 annotation으로 표현)
+			web.xml파일은 xml형식의 파일이므로 태그로 작성하며 작성규칙(dtd)에 따라서 정확하게 등록해야 한다.
+													  ----
+													  xml안에 정의할 엘리먼트(태그)의 순서
+													  정의해야할 필수 엘리먼트, 속성 등을 명시
+		① 서블릿클래스를 등록 - 무엇을...	
+		  <servlet>
+  				<servlet-name>서블릿명(alias)</servlet-name>
+  				<servlet-class>서블릿클래스명(패키지까지 포함)</servlet-class>
+ 		  </servlet>								
+ 		  ex) basic패키지에 작성된 FirstServlet을 first라는 이름으로 정의
+ 		  		<servlet>
+  					<servlet-name>first</servlet-name>
+  					<servlet-class>basic.FirstServlet</servlet-class>
+ 		  		</servlet>	
+ 		  		
+ 		② 서블릿매핑 (등록된 서블릿을 어떻게 요청할 것인지 등록 - 어떤 url로 요청할 것인지) 어떻게...
+ 		=> 	반드시 <servlet>엘리먼트 다음에 위치해야 한다. 즉, <servlet> 엘리먼트와 함께 한 쌍으로 정의해야 한다.
+ 			위에서 작성된 서블릿을 어떻게 요청할 것인지 정의하는 엘리먼트
+ 		  <servlet-mapping>
+  		  		<servlet-name>위에서 정의한 서블릿명</servlet-name>
+  				<url-pattern>요청할 서블릿의 url</url-pattern>
+  							---------------
+  								반드시 /나 .으로 시작해야 한다.
+  		  </servlet-mapping>
+  		  ex) 위에서 first라는 이름으로 정의한 서블릿을 first.kitri로 요청했을 때 실행되도록 등록
+  		  <servlet-mapping>
+  		  		<servlet-name>first</servlet-name>
+  		  		<url-pattern>/first.kitri</url-pattern>
+		  </servlet-mapping> 		  				  
+		  
+2. Servlet을 요청하는 방법(Servlet을 실행하는 방법)
+	1) get방식으로 요청(Get)
+		① 주소표시줄에 입력해서 요청하는 방법
+			=> 테스트용으로 사용(주소표시줄에 입력해서 서블릿을 요청하는 경우는 거의 없다.)
+		
+			http://서버ip:port/context명/서블릿매핑명
+										------
+										<url-pattern>에 등록한 요청path
+			ex) first.kitri로 매핑된 서블릿을 요청하는 경우
+				http://211.42.204.20:8088/serverweb/first.kitri
+				----	----------	 ---- --------  -----------
+				프로토콜		ip		 port  context명		url매핑명																				
+	
+		② 하이퍼링크로 요청하기
+			=> 텍스트나 이미지를 클릭해서 서블릿을 요청
+			<a href="http://211.42.204.20:8088/serverweb/first.kitri">서블릿요청</a>
+			<a href="/context명/서블릿요청url">서블릿요청</a>
+			<a href="/serverweb/first.kitri">서블릿요청</a>
+			
+		③ <form>태그의 method속성을 get으로 정의하고 submit버튼을 눌러서 요청하는 경우
+			- method를 생략하면 get방식
+			=> 	<form method="요청방식" action="요청할 web application 파일의 path">
+					<input type="text" name="id"/>
+					<input type="submit" />	
+				</form>
+				
+				first.kitri를 get방식으로 요청
+				<form method="get" action="/serverweb/first.kitri">
+					<input type="text" name="id"/>
+					<input type="submit" />	
+				</form>
+				
+				=> 	submit버튼을 누르면 <form></form>사이의 모든 양식 태그의 name과 value를 /serverweb/first.kitri를 요청하며
+					first.kitri로 등록된 서블릿에게 get방식으로 전송한다.
+					
+	2) Post방식으로 요청(Post)
+		<form>태그의 method속성을 post으로 정의하고 submit버튼을 눌러서 요청하는 경우
+				- method를 생략하면 post방식
+				=> 	<form method="요청방식" action="요청할 web application 파일의 path">
+						<input type="text" name="id"/>
+						<input type="submit" />	
+					</form>
+					
+					first.kitri를 post방식으로 요청
+					<form method="post" action="/serverweb/first.kitri">
+						<input type="text" name="id"/>
+						<input type="submit" />	
+					</form>
+					
+					=> 	submit버튼을 누르면 <form></form>사이의 모든 양식 태그의 name과 value를 /serverweb/first.kitri를 요청하며
+						first.kitri로 등록된 서블릿에게 post방식으로 전송한다.									

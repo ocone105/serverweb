@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="EUC-KR">
+	<title>Servlet Request Test</title>
+</head>
+<body>
+	<h1>서블릿을 요청 (실행) 하는 방법</h1>
+	<h2>1. get방식으로 요청하기</h2>
+	<h3>하이퍼링크 요청하기</h3>
+	<a href="/serverweb/gugu">서블릿요청</a>
+	<a href="/serverweb/gugu"><img src="../images/jang.jpg"/></a>
+	
+	<h3>2) form태그의 method가 get인 경우</h3>
+	<form method="get" action="/serverweb/life.do">
+		아이디:<input type="text" name="id"/>
+		패스워드:<input type="text" name="pass"/>
+		<input type="submit" value="서블릿요청"/>
+	</form>
+	<form action="/serverweb/life.do">
+		아이디:<input type="text" name="id"/>
+		패스워드:<input type="text" name="pass"/>
+		<input type="submit" value="서블릿요청(method생략)"/>
+	</form><!-- 생략해도 get임 -->
+	
+	<h2>2. post방식으로 요청하기</h2>
+	<h3>1) form태그의 method가 post인 경우</h3>
+	<form method="post" action="/serverweb/life.do">
+		아이디:<input type="text" name="id"/>
+		패스워드:<input type="text" name="pass"/>
+		<input type="submit" value="서블릿요청"/>
+	</form>
+</body>
+</html>

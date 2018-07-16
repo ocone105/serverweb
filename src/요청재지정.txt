@@ -1,0 +1,65 @@
+<<요청재지정>>
+MVC패턴을 이해하고 MVC패턴으로 개발하기 위해서 꼭 알고 있어야 하는 기술
+최초로 요청된 web application파일(서블릿)이 실행된 후 요청받은 서블릿이 응답되어야 한다.
+그러나 jsp로 작성한 후 서블릿에서 jsp파일이 응답되도록 설정해야 한다. 이를 요청재지정이라 한다.
+즉, 처음 요청된 서블릿에서 다른 web application(주로 jsp)을 다시 요청하는 것을 요청재지정이라 한다.
+이는 서블릿에서 뷰를 분리하기 위해 반드시 필요한 개념이다.
+
+1. 데이터 공유
+	page, request, session, application 객체의 내부에 있는 map구조의 저장소(name과 value를 같이 공유)에 
+	공유를 원하는 객체를 저장해서 관리한다.
+	page (this 현재 객체 자신 - 현재 jsp 페이지) - javax.servlet.jsp.PageContext
+	request (요청객체 - 한 번의 request가 응답되는 동안 실행되는 객체들) - HttpServletRequest(ServletRequest)
+	session (세션객체 - 세션이 생성된 순간 브라우저 위에서 실행하는 모든 작업을 수행하는 객체들) - HttpSession
+	application(context객체 - 톰캣메모리에 공유하므로 실행되는 모든 객체들) - ServletContext
+	
+	1) 데이터의 저장
+		setAttribute("저장할 attribute의 이름", 저장할 객체)
+	2) 데이터 가져오기
+		Object 객체 = getAttribute("가져올 attribute의 저장이름")
+		=> 원래 타입으로 casting만 하면 된다.
+			
+2. 요청재지정
+	1) response 객체의 sendRedirect
+	2) RequestDispatcher객체의 forward
+	3) RequestDispatcher객체의 include
+
+3. sendRedirect
+	1) 문법
+		HttpServletResponse의 sendRedirect라는 메소드를 이용해서 구현
+		res.sendRedirect("요청재지정될 web application의 path")
+								  ---------------------
+								  html, jsp, 서블릿 모두 가능
+								  /context명/폴더명.../요청application명
+
+	2) 개요
+		response를 하고 다시 재요청하는 방법이므로 데이터를 공유할 수 없다.
+		로그인 아이디나 패스워드를 잘못 입력한 경우 로그인 페이지를 다시 보여주기 위한 방법으로 주로 사용
+		(이마저도 스프링으로 구축된 곳에서는 거의 forward를 통해 작업하므로 사용하지 않는다.)	
+	
+	3) 실행흐름
+		sendRedirect를 이용하여 요청을 재지정하는 경우 처음 요청된 서블릿을 실행하고 응답한 후에
+		sendRedirect로 설정된 web application을 재 요청하는 방식으로 처리된다.
+		즉, 두 번의 요청으로 처리된다.
+		
+	4) 특징
+		- 두 번의 요청으로 응답되므로 데이터를 절대 공유할 수 없다.
+			(request객체에 데이터를 공유하는 경우에 대해서만)
+		- 새롭게 요청을 다시 보내는 것이므로 주소표시줄이 요청재지정으로 설정한 web application path로 변경된다. 	
+		
+4. forward
+	1) 문법
+		RequestDispatcher의 forward메소드를 이용해서 작업
+		RequestDispatcher rd = request.getRequestDispatcher("요청재지정할 application의 path")
+		re.forward(request객체, response객체)
+		
+	2) 개요 및 실행흐름
+		Client가 Servlet을 요청하는 경우 Servlet이 실행되고 forward로 지정한 web application이 재요청되어 실행된다.
+		이때 재지정되는 요청이 새로운 요청이 만들어지면 요청되는 것이 아니라 response되지 않은 상태로 요청되므로 
+		한 번의 요청으로 두 개의 web application이 실행된다.
+		따라서 같은 request객체를 사용하므로 데이터의 공유가 가능하다.
+		한 번의 요청으로 실행되는 두 개의 web application을 같은 request scope에 존재한다고 표현한다.
+		
+	3) 	특징
+		- 한 번의 요청으로 실행되므로 forward된 후에 주소 표시줄이 최초 요청된 서블릿의 주소로 표시된다.
+		- response되지 않고 한 번의 요청으로 실행되므로 같은 request객체를 공유해서 사용하게 된다. 따라서 데이터의 공유가 가능하다.					  
